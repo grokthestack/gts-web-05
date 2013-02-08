@@ -89,7 +89,7 @@ And then you can use them in any handler method:
 
 	post '/'
 		if params['color']
-			sessions['color'] = params['color']
+			session['color'] = params['color']
 		end
 	end
 
