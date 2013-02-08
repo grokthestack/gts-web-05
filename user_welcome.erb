@@ -1,0 +1,10 @@
+
+<% if @user %>
+
+  Thank you for logging in, <%= @user['name'] %>!
+
+<% else %>
+
+  Sorry, the user "<%= @name %>" with the given password doesn't exist.
+
+<% end %>

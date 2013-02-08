@@ -1,6 +1,8 @@
 require 'sinatra'
 require "sqlite3"
 
+enable :sessions
+
 database_file = settings.environment.to_s+".sqlite3"
 
 db = SQLite3::Database.new database_file
@@ -15,7 +17,8 @@ db.execute "
 db.execute "
 	CREATE TABLE IF NOT EXISTS users (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name VARCHAR(255) UNIQUE
+		name VARCHAR(255) UNIQUE,
+                password VARCHAR(255)
 	);
 ";
 
@@ -25,7 +28,7 @@ get '/' do
 end
 
 post '/' do
-	@name = params['name']
+	@name = params['name'] || session['name']
 	result = db.execute("SELECT * FROM users WHERE name = ?", @name) || []
 	if result.length>0
 		db.execute(
@@ -69,8 +72,21 @@ end
 
 # Create a new user (name, password)
 post '/users/' do
+  @name = params['name']
+  password = params['password']
+  db.execute("INSERT INTO users(name, password) VALUES( ?, ? )",
+	     @name, password)
 end
 
 # Login the user (name, password)
 post '/login' do
+  @name = params['name']
+  result = db.execute("SELECT * FROM users 
+                      WHERE name = ? AND password = ?", 
+                      @name, params['password'])
+  @user = result.shift || false
+  if @user
+    session['name'] = @user['name']
+  end
+  erb File.read('user_welcome.erb')
 end
