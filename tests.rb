@@ -71,8 +71,8 @@ class ApplicationTest < Test::Unit::TestCase
 
 	def test_user_profile
 
-		login_user 
-		name = "test_name_#{rand(256)}"
+		user = login_user
+		name = user[:name]
 
 		post '/', { :message => 'First post'    }
 		post '/', { :message => 'A second post' }
