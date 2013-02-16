@@ -15,7 +15,8 @@ db.execute "
 db.execute "
 	CREATE TABLE IF NOT EXISTS users (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name VARCHAR(255) UNIQUE
+		name VARCHAR(255) UNIQUE,
+                password VARCHAR(255)
 	);
 ";
 
@@ -69,8 +70,16 @@ end
 
 # Create a new user (name, password)
 post '/users/' do
+  db.execute("INSERT INTO users(name, password) VALUES (?, ?)",
+             params['name'], params['password'])
 end
 
 # Login the user (name, password)
 post '/login' do
+  @name = params['name']
+  result = db.execute("SELECT * FROM users WHERE name = ? and password = ?", 
+                      @name, params['password']) || []
+  if result.length>0
+    erb File.read('welcome.erb')
+  end
 end

@@ -186,7 +186,8 @@ class ApplicationTest < Test::Unit::TestCase
 
 	def test_can_only_edit_own_username
 
-		login_user 
+		user = login_user 
+                name = user[:name]
 
 		name1 = "test_name_#{rand(256)}"
 		name2 = "test_name_#{rand(256)}"
@@ -196,6 +197,10 @@ class ApplicationTest < Test::Unit::TestCase
 
 		post '/users/'+name1, {:name => name2}
 
+                assert last_response.body.include?(mess),
+                  "Page says, '#{mess}'"
+
+                post '/users/'+name, {:name => name2}
 		get '/users/'+name2
 
 		assert last_response.ok?,
