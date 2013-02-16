@@ -70,8 +70,16 @@ end
 
 # Create a new user (name, password)
 post '/users/' do
+  db.execute("INSERT into users(name, password) VALUES (?, ?)",
+             params['name'], params['password'])
 end
 
 # Login the user (name, password)
 post '/login' do
+  @name = params['name']
+  result = db.execute("SELECT * FROM users WHERE name = ? and password = ?", 
+                      @name, params['password']) || []
+  if result.length>0
+    erb File.read('welcome.erb')
+  end
 end
