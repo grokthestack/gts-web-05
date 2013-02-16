@@ -15,7 +15,8 @@ db.execute "
 db.execute "
 	CREATE TABLE IF NOT EXISTS users (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name VARCHAR(255) UNIQUE
+		name VARCHAR(255) UNIQUE,
+                password VARCHAR(255)
 	);
 ";
 
