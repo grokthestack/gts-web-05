@@ -186,16 +186,21 @@ class ApplicationTest < Test::Unit::TestCase
 
 	def test_can_only_edit_own_username
 
-		login_user 
+		user = login_user
+                name = user[:name]
 
 		name1 = "test_name_#{rand(256)}"
 		name2 = "test_name_#{rand(256)}"
-		mess  = "Sorry, the user \"#{name1}\" doesn't exist."
+		mess  = "Sorry, you are not user \"#{name1}\"."
 
 		post '/', { :message => 'First post' }
 
 		post '/users/'+name1, {:name => name2}
 
+                assert last_response.body.include?(mess),
+                  "The user cannot edit another user's name"
+
+		post '/users/'+name, {:name => name2}
 		get '/users/'+name2
 
 		assert last_response.ok?,
