@@ -20,21 +20,24 @@ db.execute "
 	);
 ";
 
+enable :sessions
+
 get '/' do
 	@messages = db.execute("SELECT * FROM guestbook JOIN users ON users.id = guestbook.user_id");
 	erb File.read('our_form.erb')
 end
 
 post '/' do
-	@name = params['name']
-	result = db.execute("SELECT * FROM users WHERE name = ?", @name) || []
-	if result.length>0
-		db.execute(
-			"INSERT INTO guestbook VALUES( ?, ? )",
-			result.shift['id'], params['message']
-		);
-		erb File.read('thanks.erb')
-	end
+        id = session['user_id']
+        if id
+          db.execute("INSERT INTO guestbook VALUES( ?, ? )",
+                     id, params['message']);
+          result = db.execute("SELECT * FROM users WHERE id = ?", id)
+	  @name = result.shift['name']
+          erb File.read('thanks.erb')
+        else
+          erb File.read('not_logged_in.erb')
+        end
 end
 
 get '/users/:name' do
@@ -62,9 +65,20 @@ end
 
 post '/users/:old_name' do
 
-	db.execute("
-		UPDATE users SET name = ? WHERE name = ?;
-	", params['name'], params['old_name'])
+        id = session['user_id']
+        if id
+          result = db.execute("SELECT * FROM users WHERE id = ?", id)
+	  session_name = result.shift['name']
+          if session_name == params['old_name']
+            db.execute("UPDATE users SET name = ? WHERE name = ?", 
+                       params['name'], params['old_name'])
+          else
+            @old_name = params['old_name']
+            erb File.read('wrong_user.erb')
+          end
+        else
+          erb File.read('not_logged_in.erb')
+        end
 
 end
 
@@ -80,6 +94,9 @@ post '/login' do
   result = db.execute("SELECT * FROM users WHERE name = ? and password = ?", 
                       @name, params['password']) || []
   if result.length>0
+    session['user_id'] = result.shift['id']
     erb File.read('welcome.erb')
+  else
+    erb File.read('incorrect_password.erb')
   end
 end
